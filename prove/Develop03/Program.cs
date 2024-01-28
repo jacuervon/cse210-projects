@@ -81,6 +81,7 @@ class Program
 
         if(scripture.IsCompletelyHidden())
         {
+            Console.WriteLine("");
             Console.WriteLine("You have already memorized this scripture!");
             Console.WriteLine("Do you want to reset it? (y/n)");
             string reset = Console.ReadLine();
@@ -97,6 +98,7 @@ class Program
         {
             Console.Clear();
             Console.WriteLine(scripture.GetDisplayText());
+            Console.WriteLine();
             Console.Write("Press enter to hide words, or type 'quit' to exit:");
             string userInput = Console.ReadLine();
             if (userInput == "quit" || scripture.IsCompletelyHidden())
