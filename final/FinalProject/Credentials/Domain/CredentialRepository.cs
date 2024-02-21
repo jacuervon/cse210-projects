@@ -1,4 +1,4 @@
-namespace FinalProject.Credentials
+namespace FinalProject.Credentials.Domain
 {
     public interface ICredentialRepository
     {

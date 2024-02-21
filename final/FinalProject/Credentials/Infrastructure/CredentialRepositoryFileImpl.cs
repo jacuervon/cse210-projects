@@ -1,4 +1,5 @@
-namespace FinalProject.Credentials
+using FinalProject.Credentials.Domain;
+namespace FinalProject.Credentials.Infrastructure
 {
     public class CredentialRepositoryFileImpl : ICredentialRepository
     {
@@ -13,9 +14,9 @@ namespace FinalProject.Credentials
         public void AddCredential(Credential credential)
         {
             LoadCredentials();
+            credential.SetId(_credentials.Count + 1);
             _credentials.Add(credential);
-            int id = _credentials.Count + 1;
-            SaveCredentials(id);
+            SaveCredentials();
         }
 
         public void RemoveCredentialById(int id)
@@ -49,7 +50,7 @@ namespace FinalProject.Credentials
         public List<Credential> GetCredentialsByName(string name)
         {
             LoadCredentials();
-            return _credentials.Where(c => c.GetName() == name).ToList();
+            return _credentials.FindAll(c => c.GetName().ToLower().Contains(name));
         }
 
         private void LoadCredentials()
@@ -71,10 +72,10 @@ namespace FinalProject.Credentials
                     }
                     switch (type)
                     {
-                        case "FinalProject.Credentials.SimpleCredential":
+                        case "Simple":
                             _credentials.Add(new SimpleCredential(id, name, details[0], details[1]));
                             break;
-                        case "FinalProject.Credentials.FtpCredential":
+                        case "FTP":
                             _credentials.Add(new FtpCredential(id, name, details[0], details[1], details[2], details[3]));
                             break;
                     }
@@ -82,20 +83,13 @@ namespace FinalProject.Credentials
             }
         }
 
-        private void SaveCredentials(int id = 0)
+        private void SaveCredentials()
         {
             List<string> lines = new List<string>();
             foreach (Credential credential in _credentials)
             {
                 Dictionary<string, string> details = credential.GetDetails();
-                if (credential.GetId() == 0)
-                {
-                    id++;
-                }else{
-                    id = credential.GetId();
-                }
-                string line = id + "," + credential.GetName();
-                line += "," + typeof(Credential);
+                string line = $"{credential.GetId()},{credential.GetName()},{credential.GetCredentialType()}";
                 foreach (KeyValuePair<string, string> detail in details)
                 {
                     line += "," + detail.Value;

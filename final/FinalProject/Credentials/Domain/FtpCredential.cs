@@ -1,26 +1,28 @@
-namespace FinalProject.Credentials
+namespace FinalProject.Credentials.Domain
 {
     public class FtpCredential : Credential
     {
         private string _username;
         private string _password;
         private string _domain;
-        private int _port;
+        private string _port;
 
-        public FtpCredential(int id, string name, string username, string password, string domain, string port) : base(name, id)
+        public FtpCredential(int id, string name, string username, string password, string domain, string port) : base(id, name)
         {
+            _type = "FTP";
             _username = username;
             _password = password;
             _domain = domain;
-            _port = int.Parse(port);
+            _port = port;
         }
 
         public FtpCredential(string name, string username, string password, string domain, string port) : base(name)
         {
+            _type = "FTP";
             _username = username;
             _password = password;
             _domain = domain;
-            _port = int.Parse(port);
+            _port = port;
         }
 
         public override Dictionary<string, string> GetDetails()

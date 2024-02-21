@@ -1,120 +1,179 @@
 using System;
-
-using FinalProject.Credentials;
-
+using FinalProject.Credentials.Domain;
+using FinalProject.Credentials.Application;
+using FinalProject.Credentials.Infrastructure;
 class Program
 {
     static void Main(string[] args)
     {
-        string fileName = "credentials.txt";
-        ICredentialRepository credentialRepository = new CredentialRepositoryFileImpl(fileName);
-        CredentialService credentialService = new CredentialService(credentialRepository);
+        ICredentialRepository repository = InitRepository();
+        CredentialService service = new CredentialService(repository);
         bool isRunning = true;
-
         while (isRunning)
         {
-            Console.WriteLine("Welcome to the Credential Manager");
-            Console.WriteLine("1. Add a new credential");
-            Console.WriteLine("2. Remove a credential");
-            Console.WriteLine("3. Update a credential");
-            Console.WriteLine("4. Get a credential by ID");
-            Console.WriteLine("5. Get all credentials");
-            Console.WriteLine("6. Get credentials by name");
-            Console.WriteLine("7. Exit");
-
+            Console.WriteLine("Credential Manager");
+            Console.WriteLine();
+            DisplayMenu();
             Console.Write("Enter your choice: ");
-            string input = Console.ReadLine();
-            int choice = int.Parse(input);
-
+            string choice = Console.ReadLine();
+            Console.Clear();
             switch (choice)
             {
-                case 1:
-                    Credential credential;
-                    Console.Write("Enter the name: ");
-                    string name = Console.ReadLine();
-                    Console.WriteLine("Types of credential: ");
-                    Console.WriteLine(" 1. Username/Password");
-                    Console.WriteLine(" 2. FTP");
-                    Console.WriteLine("Enter the type: ");
-                    string type = Console.ReadLine();
-                    if (int.Parse(type) == 2)
-                    {
-                        Console.Write("Enter the username: ");
-                        string username = Console.ReadLine();
-                        Console.Write("Enter the password: ");
-                        string password = Console.ReadLine();
-                        Console.Write("Enter the domain: ");
-                        string domain = Console.ReadLine();
-                        Console.Write("Enter the port: ");
-                        string port = Console.ReadLine();
-                        credential = new FtpCredential(name, username, password, domain, port);
-
-                    }
-                    else
-                    {
-                        Console.Write("Enter the username: ");
-                        string username = Console.ReadLine();
-                        Console.Write("Enter the password: ");
-                        string password = Console.ReadLine();
-                        credential = new SimpleCredential(name, username, password);
-                    }
-                    credentialService.AddCredential(credential);
+                case "1":
+                    AddCredential(service);
                     break;
-                case 2:
-                    Console.Write("Enter the ID: ");
-                    input = Console.ReadLine();
-                    int id = int.Parse(input);
-                    credentialService.RemoveCredentialById(id);
+                case "2":
+                    RemoveCredential(service);
                     break;
-                case 4:
-                    Console.Write("Enter the ID: ");
-                    input = Console.ReadLine();
-                    id = int.Parse(input);
-                    credential = credentialService.GetCredentialById(id);
-                    if (credential == null)
-                    {
-                        Console.WriteLine("Credential not found");
-                        break;
-                    }
-                    Console.Clear();
-                    Console.WriteLine("=====================================");
-                    Console.WriteLine(credential.GetId() + ": " + credential.GetName());
-                    foreach (KeyValuePair<string, string> detail in credential.GetDetails())
-                    {
-                        Console.WriteLine(detail.Key + ": " + detail.Value);
-                    }
+                case "3":
+                    GetCredentialById(service);
                     break;
-                case 5:
-                    List<Credential> credentials = credentialService.GetAllCredentials();
-                    Console.Clear();
-                    foreach (Credential c in credentials)
-                    {
-                        Console.WriteLine("=====================================");
-                        Console.WriteLine(c.GetId() + ": " + c.GetName());
-                        foreach (KeyValuePair<string, string> detail in c.GetDetails())
-                        {
-                            Console.WriteLine(detail.Key + ": " + detail.Value);
-                        }
-                        Console.WriteLine("=====================================");
-                    }
+                case "4":
+                    GetAllCredentials(service);
                     break;
-                case 6:
-                    Console.Write("Enter the name: ");
-                    name = Console.ReadLine();
-                    List<Credential> credentialsByName = credentialService.GetCredentialsByName(name);
-                    foreach (Credential c in credentialsByName)
-                    {
-                        Console.WriteLine(c);
-                    }
+                case "5":
+                    GetCredentialsByName(service);
                     break;
-                case 7:
+                case "6":
                     isRunning = false;
                     break;
                 default:
                     Console.WriteLine("Invalid choice");
                     break;
             }
-
+            Console.Clear();
         }
+    }
+
+    static ICredentialRepository InitRepository()
+    {
+        Console.Write("Enter the file name for the credentials: ");
+        string fileName = Console.ReadLine();
+        Console.WriteLine();
+        return new CredentialRepositoryFileImpl(fileName);
+    }
+
+    static void DisplayMenu()
+    {
+        Console.WriteLine("1. Add a credential");
+        Console.WriteLine("2. Remove a credential");
+        Console.WriteLine("3. Get a credential by id");
+        Console.WriteLine("4. Get all credentials");
+        Console.WriteLine("5. Get credentials by name");
+        Console.WriteLine("6. Exit");
+    }
+
+    static void AddCredential(CredentialService service)
+    {
+        Console.WriteLine("Credential Type: ");
+        Console.WriteLine(" 1. Username/Password");
+        Console.WriteLine(" 2. FTP");
+        Console.Write("Enter your choice: ");
+        string type = Console.ReadLine();
+
+        Console.Write("Credential Name: ");
+        string name = Console.ReadLine();
+        Credential credential;
+
+        switch (type)
+        {
+            case "1":
+                Console.Write("Username: ");
+                string username = Console.ReadLine();
+                Console.Write("Password: ");
+                string password = Console.ReadLine();
+                credential = new SimpleCredential(name, username, password);
+                service.AddCredential(credential);
+                break;
+            case "2":
+                Console.Write("Server: ");
+                string server = Console.ReadLine();
+                Console.Write("Port: ");
+                string port = Console.ReadLine();
+                Console.Write("Username: ");
+                string ftpUsername = Console.ReadLine();
+                Console.Write("Password: ");
+                string ftpPassword = Console.ReadLine();
+                Credential ftpCredential = new FtpCredential(name, ftpUsername, ftpPassword, server, port);
+                service.AddCredential(ftpCredential);
+                break;
+            default:
+                Console.WriteLine("Invalid type");
+                break;
+        }
+    }
+
+    static void GetCredentialsByName(CredentialService service)
+    {
+        Console.Write("Enter the name of the credential: ");
+        string name = Console.ReadLine();
+        List<Credential> credentials = service.GetCredentialsByName(name);
+        PrintCredentialsShort(credentials);
+        if (credentials.Count > 0)
+        {
+            GetCredentialById(service);
+        }
+        else
+        {
+            Console.WriteLine();
+            Console.WriteLine("Press any key to continue");
+            Console.ReadKey();
+        }
+    }
+
+    static void GetCredentialById(CredentialService service)
+    {
+        Console.Write("Enter the id of the credential: ");
+        int id = int.Parse(Console.ReadLine());
+        Credential credential = service.GetCredentialById(id);
+        PrintCredentialFull(credential);
+    }
+
+    static void GetAllCredentials(CredentialService service)
+    {
+        List<Credential> credentials = service.GetAllCredentials();
+        PrintCredentialsShort(credentials);
+        if (credentials.Count > 0)
+        {
+            GetCredentialById(service);
+        } else
+        {
+            Console.WriteLine("No credentials found");
+            Console.WriteLine();
+            Console.WriteLine("Press any key to continue");
+            Console.ReadKey();
+        }
+    }
+
+    static void PrintCredentialsShort(List<Credential> credentials)
+    {
+        Console.WriteLine($"{new String('=', 10)} Credentials {new String('=', 10)}");
+        foreach (var credential in credentials)
+        {
+            Console.WriteLine(credential.GetId() + " - " + credential.GetName());
+        }
+        Console.WriteLine();
+    }
+
+    static void PrintCredentialFull(Credential credential)
+    {
+        Console.WriteLine($"{new String('=', 30)}");
+        Console.WriteLine("Id: " + credential.GetId());
+        Console.WriteLine("Name: " + credential.GetName());
+        Console.WriteLine("Type: " + credential.GetCredentialType());
+        foreach (var detail in credential.GetDetails())
+        {
+            Console.WriteLine(detail.Key + ": " + detail.Value);
+        }
+        Console.WriteLine($"{new String('=', 30)}");
+        Console.WriteLine("Press any key to continue");
+        Console.ReadKey();
+    }
+
+    static void RemoveCredential(CredentialService service)
+    {
+        Console.Write("Enter the id of the credential to remove: ");
+        int id = int.Parse(Console.ReadLine());
+        service.RemoveCredentialById(id);
     }
 }

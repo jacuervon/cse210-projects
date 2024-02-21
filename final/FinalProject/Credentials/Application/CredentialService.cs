@@ -1,4 +1,5 @@
-namespace FinalProject.Credentials
+using FinalProject.Credentials.Domain;
+namespace FinalProject.Credentials.Application
 {
     public class CredentialService
     {

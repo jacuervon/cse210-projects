@@ -1,18 +1,20 @@
-namespace FinalProject.Credentials
+namespace FinalProject.Credentials.Domain
 {
     public class SimpleCredential : Credential
     {
         private string _username;
         private string _password;
 
-        public SimpleCredential(int id, string name, string username, string password) : base(name, id)
+        public SimpleCredential(int id, string name, string username, string password) : base(id, name)
         {
+            _type = "Simple";
             _username = username;
             _password = password;
         }
 
         public SimpleCredential(string name, string username, string password) : base(name)
         {
+            _type = "Simple";
             _username = username;
             _password = password;
         }
